@@ -32,8 +32,12 @@ def main():
     
     target=" ".join(argv)
     
-    run(target, options.timeout, options.retry, 
-        preserveChildren=options.preserveChildren, verbose=options.verbose)
+    rc=run(target, options.timeout, options.retry, 
+           preserveChildren=options.preserveChildren, verbose=options.verbose)
+    if rc:
+        sys.exit(0)
+    else:
+        sys.exit(1)
 
 def run(target, timeout=TIMEOUT, retry=RETRY,
         preserveChildren=False, verbose=False):
@@ -43,8 +47,13 @@ def run(target, timeout=TIMEOUT, retry=RETRY,
     @param retry: Number of time we will try to kill the process with SIGTERM and SIGKILL (int)
     @param preserveChildren: Do we need to also kill process children ? Default is True (bool)
     @param verbose: Print what happened on standard output (bool)
+    @return: True if everything is ok. None or False else.
     """
     
+    # Some sanity checks
+    if timeout<0 or retry<1:
+        print "Timeout must be a positive integer and number of retry must be greater or equal than 1"
+        return
     if verbose:
         print "running %s" % target
 
@@ -75,6 +84,7 @@ def run(target, timeout=TIMEOUT, retry=RETRY,
                         else:
                             print "Error while killing %s:\n%s" % (pid, e)
                 sleep(i)
+    return True
 
 def getChildrenPid(fatherPid):
     """Return a list of a process children PID
