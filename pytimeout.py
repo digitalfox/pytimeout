@@ -17,8 +17,10 @@ from time import sleep
 from optparse import OptionParser
 
 # Some constant for default values
-TIMEOUT=10 # in seconds
-RETRY=2  # number of retry to kill process
+TIMEOUT=10     # in seconds
+RETRY=2        # number of retry to kill process
+INIT_PID=1     # PID of the init process. Equal to 1 for most unices
+VERSION=0.1    # Release of pytimeout
 
 def main():
     """Just a wrapper for CLI usage to the run() function"""
@@ -28,7 +30,7 @@ def main():
 
     if not argv:
         print "Command to launch must be supplied !"
-        sys.exit(1)
+        sys.exit(2)
     
     target=" ".join(argv)
     
@@ -66,7 +68,7 @@ def run(target, timeout=TIMEOUT, retry=RETRY,
         if preserveChildren:
             pids=[]
         else:
-            pids=getChildrenPid(process.pid)
+            pids=getChildrenPid(process.pid, verbose)
         pids.append(process.pid)
         for i in xrange(retry):
             for signal in (15, 9): # SIGTERM then SIGKILL
@@ -86,38 +88,61 @@ def run(target, timeout=TIMEOUT, retry=RETRY,
                 sleep(i)
     return True
 
-def getChildrenPid(fatherPid):
+def getChildrenPid(fatherPid, verbose=False):
     """Return a list of a process children PID
     @param pid: father pid
     @return: list of children pid (list of int)"""
 
     # Get all PID
-    pids=[int(pid) for pid in os.listdir("/proc") if pid.isdigit()]
+    try:
+        pids=[int(pid) for pid in os.listdir("/proc") if pid.isdigit()]
+    except OSError:
+        print "Warning, /proc does not exist or is not readable. Cannot find child process"
+        return []
     
     #Build father tree
     father={}
     for pid in pids:
-        for line in file(os.path.join("/proc", str(pid), "status")):
-            if line.startswith("PPid"):
-                father[pid]=int(line.split(":")[1])
+        try:
+            for line in file(os.path.join("/proc", str(pid), "status")):
+                if line.startswith("PPid"):
+                    father[pid]=int(line.split(":")[1])
+        except:
+            # Process disapear since /proc listing above
+            # Forget it silently
+            pass
     
     # Look for children
+    fatherNotFoundError="""Warning: I don't know who is %s's father.
+This can happened if we do not have enough right to read /proc/<pids>
+or if this process disapear in the interval.\n"""
+    
     children=[]   
     for pid in pids:
+        if not father.has_key(pid):
+            if verbose:
+                print fatherNotFoundError % pid 
+            continue
         childPid=pid
-        while pid!=1:
+        while pid!=INIT_PID:
             if father[pid]==fatherPid:
                 children.append(childPid)
                 break
-            pid=father[pid]
+            if father.has_key(pid):
+                pid=father[pid]
+            else:
+                if verbose:
+                    print fatherNotFoundError % pid
+                break
     return children
         
 def parseOptions():
     """Parses command argument using optparse python module
     @return: (options, argv) tuple"""
     
-    usage = "usage: %prog [options] <program to launch>"
-    parser=OptionParser(usage=usage)
+    usage="usage: %prog [options] <program to launch>"
+    version="%%prog %s" % VERSION 
+    parser=OptionParser(usage=usage, version=version)
 
     # Timeout
     parser.add_option("-t", "--timeout", dest="timeout", type="int", default=TIMEOUT,
