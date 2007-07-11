@@ -20,7 +20,7 @@ from optparse import OptionParser
 TIMEOUT=10     # in seconds
 RETRY=2        # number of retry to kill process
 INIT_PID=1     # PID of the init process. Equal to 1 for most unices
-VERSION=0.1    # Release of pytimeout
+VERSION="0.1"  # Release of pytimeout
 
 def main():
     """Just a wrapper for CLI usage to the run() function"""
