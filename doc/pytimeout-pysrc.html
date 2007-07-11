@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>pytimeout</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th bgcolor="#70b0f0" class="navbar-select"
+          >&nbsp;&nbsp;&nbsp;Home&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >pytimeout</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        Module&nbsp;pytimeout
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript: void(0);" class="privatelink"
+    onclick="toggle_private();">hide private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="pytimeout-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="pytimeout-module.html">Module pytimeout</a></h1>
+<pre class="py-src">
+<span class="py-lineno">  1</span>  <span class="py-line"><span class="py-comment">#!/usr/bin/env python</span> </span>
+<span class="py-lineno">  2</span>  <span class="py-line"><span class="py-comment"></span><span class="py-comment"># -*- coding: utf-8 -*-</span> </span>
+<span class="py-lineno">  3</span>  <span class="py-line"><span class="py-comment"></span> </span>
+<span class="py-lineno">  4</span>  <span class="py-line"><span class="py-comment"># S&#233;bastien Renard (sebastien.renard@digitalfox.org)</span> </span>
+<span class="py-lineno">  5</span>  <span class="py-line"><span class="py-comment"></span><span class="py-comment"># Code licensed under GNU GPL V2</span> </span>
+<span class="py-lineno">  6</span>  <span class="py-line"><span class="py-comment"></span> </span>
+<span class="py-lineno">  7</span>  <span class="py-line"><span class="py-docstring">"""pytimeout module.</span> </span>
+<span class="py-lineno">  8</span>  <span class="py-line"><span class="py-docstring">Provide both a command line interface and an API (via the "run" function)</span> </span>
+<span class="py-lineno">  9</span>  <span class="py-line"><span class="py-docstring">to allow process launching with a define time to live before being killed.</span> </span>
+<span class="py-lineno"> 10</span>  <span class="py-line"><span class="py-docstring">"""</span> </span>
+<span class="py-lineno"> 11</span>  <span class="py-line"> </span>
+<span class="py-lineno"> 12</span>  <span class="py-line"><span class="py-comment"># Python imports</span> </span>
+<span class="py-lineno"> 13</span>  <span class="py-line"><span class="py-comment"></span><span class="py-keyword">import</span> <span class="py-name">sys</span> </span>
+<span class="py-lineno"> 14</span>  <span class="py-line"><span class="py-keyword">import</span> <span class="py-name">os</span> </span>
+<span class="py-lineno"> 15</span>  <span class="py-line"><span class="py-keyword">from</span> <span class="py-name">subprocess</span> <span class="py-keyword">import</span> <span class="py-name">Popen</span> </span>
+<span class="py-lineno"> 16</span>  <span class="py-line"><span class="py-keyword">from</span> <span class="py-name">time</span> <span class="py-keyword">import</span> <span class="py-name">sleep</span> </span>
+<span class="py-lineno"> 17</span>  <span class="py-line"><span class="py-keyword">from</span> <span class="py-name">optparse</span> <span class="py-keyword">import</span> <span class="py-name">OptionParser</span> </span>
+<span class="py-lineno"> 18</span>  <span class="py-line"> </span>
+<span class="py-lineno"> 19</span>  <span class="py-line"><span class="py-comment"># Some constant for default values</span> </span>
+<span class="py-lineno"> 20</span>  <span class="py-line"><span class="py-comment"></span><span id="link-0" class="py-name"><a title="pytimeout.TIMEOUT" class="py-name" href="#" onclick="doclink('link-0', 'TIMEOUT', 'Variable pytimeout.TIMEOUT=pytimeout-module.html#TIMEOUT'); return false;">TIMEOUT</a></span></span><span class="py-op">=</span><span class="py-number">10</span>     <span class="py-comment"># in seconds</span> </span>
+<span class="py-lineno"> 21</span>  <span class="py-line"><span id="link-1" class="py-name"><a title="pytimeout.RETRY" class="py-name" href="#" onclick="doclink('link-1', 'RETRY', 'Variable pytimeout.RETRY=pytimeout-module.html#RETRY'); return false;">RETRY</a></span></span><span class="py-op">=</span><span class="py-number">2</span>        <span class="py-comment"># number of retry to kill process</span> </span>
+<span class="py-lineno"> 22</span>  <span class="py-line"><span id="link-2" class="py-name"><a title="pytimeout.INIT_PID" class="py-name" href="#" onclick="doclink('link-2', 'INIT_PID', 'Variable pytimeout.INIT_PID=pytimeout-module.html#INIT_PID'); return false;">INIT_PID</a></span></span><span class="py-op">=</span><span class="py-number">1</span>     <span class="py-comment"># PID of the init process. Equal to 1 for most unices</span> </span>
+<span class="py-lineno"> 23</span>  <span class="py-line"><span id="link-3" class="py-name"><a title="pytimeout.VERSION" class="py-name" href="#" onclick="doclink('link-3', 'VERSION', 'Variable pytimeout.VERSION=pytimeout-module.html#VERSION'); return false;">VERSION</a></span></span><span class="py-op">=</span><span class="py-string">"0.1"</span>  <span class="py-comment"># Release of pytimeout</span> </span>
+<span class="py-lineno"> 24</span>  <span class="py-line"> </span>
+<a name="main"></a><div id="main-def"><span class="py-lineno"> 25</span> <a class="py-toggle" href="#" id="main-toggle" onclick="toggle('main'); return false;">-</a><span class="py-line"><span class="py-keyword">def</span> <a class="py-def-name" href="pytimeout-module.html#main">main</a><span class="py-op">(</span><span class="py-op">)</span><span class="py-op">:</span> </span>
+</div><div id="main-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="main-expanded"><span class="py-lineno"> 26</span>  <span class="py-line">    <span class="py-docstring">"""Just a wrapper for CLI usage to the run() function"""</span> </span>
+<span class="py-lineno"> 27</span>  <span class="py-line">     </span>
+<span class="py-lineno"> 28</span>  <span class="py-line">    <span class="py-comment"># Options &amp; args stuf</span> </span>
+<span class="py-lineno"> 29</span>  <span class="py-line"><span class="py-comment"></span>    <span class="py-op">(</span><span class="py-name">options</span><span class="py-op">,</span> <span class="py-name">argv</span><span class="py-op">)</span><span class="py-op">=</span><span id="link-4" class="py-name"><a title="pytimeout.parseOptions" class="py-name" href="#" onclick="doclink('link-4', 'parseOptions', 'Function pytimeout.parseOptions()=pytimeout-module.html#parseOptions'); return false;">parseOptions</a></span></span><span class="py-op">(</span><span class="py-op">)</span> </span>
+<span class="py-lineno"> 30</span>  <span class="py-line"> </span>
+<span class="py-lineno"> 31</span>  <span class="py-line">    <span class="py-keyword">if</span> <span class="py-keyword">not</span> <span class="py-name">argv</span><span class="py-op">:</span> </span>
+<span class="py-lineno"> 32</span>  <span class="py-line">        <span class="py-keyword">print</span> <span class="py-string">"Command to launch must be supplied !"</span> </span>
+<span class="py-lineno"> 33</span>  <span class="py-line">        <span class="py-name">sys</span><span class="py-op">.</span><span class="py-name">exit</span><span class="py-op">(</span><span class="py-number">2</span><span class="py-op">)</span> </span>
+<span class="py-lineno"> 34</span>  <span class="py-line">     </span>
+<span class="py-lineno"> 35</span>  <span class="py-line">    <span class="py-name">target</span><span class="py-op">=</span><span class="py-string">" "</span><span class="py-op">.</span><span class="py-name">join</span><span class="py-op">(</span><span class="py-name">argv</span><span class="py-op">)</span> </span>
+<span class="py-lineno"> 36</span>  <span class="py-line">     </span>
+<span class="py-lineno"> 37</span>  <span class="py-line">    <span class="py-name">rc</span><span class="py-op">=</span><span id="link-5" class="py-name"><a title="pytimeout.run" class="py-name" href="#" onclick="doclink('link-5', 'run', 'Function pytimeout.run()=pytimeout-module.html#run'); return false;">run</a></span></span><span class="py-op">(</span><span class="py-name">target</span><span class="py-op">,</span> <span class="py-name">options</span><span class="py-op">.</span><span class="py-name">timeout</span><span class="py-op">,</span> <span class="py-name">options</span><span class="py-op">.</span><span class="py-name">retry</span><span class="py-op">,</span>  </span>
+<span class="py-lineno"> 38</span>  <span class="py-line">           <span class="py-name">preserveChildren</span><span class="py-op">=</span><span class="py-name">options</span><span class="py-op">.</span><span class="py-name">preserveChildren</span><span class="py-op">,</span> <span class="py-name">verbose</span><span class="py-op">=</span><span class="py-name">options</span><span class="py-op">.</span><span class="py-name">verbose</span><span class="py-op">)</span> </span>
+<span class="py-lineno"> 39</span>  <span class="py-line">    <span class="py-keyword">if</span> <span class="py-name">rc</span><span class="py-op">:</span> </span>
+<span class="py-lineno"> 40</span>  <span class="py-line">        <span class="py-name">sys</span><span class="py-op">.</span><span class="py-name">exit</span><span class="py-op">(</span><span class="py-number">0</span><span class="py-op">)</span> </span>
+<span class="py-lineno"> 41</span>  <span class="py-line">    <span class="py-keyword">else</span><span class="py-op">:</span> </span>
+<span class="py-lineno"> 42</span>  <span class="py-line">        <span class="py-name">sys</span><span class="py-op">.</span><span class="py-name">exit</span><span class="py-op">(</span><span class="py-number">1</span><span class="py-op">)</span> </span>
+</div><span class="py-lineno"> 43</span>  <span class="py-line"> </span>
+<a name="run"></a><div id="run-def"><span class="py-lineno"> 44</span> <a class="py-toggle" href="#" id="run-toggle" onclick="toggle('run'); return false;">-</a><span class="py-line"><span class="py-keyword">def</span> <a class="py-def-name" href="pytimeout-module.html#run">run</a><span class="py-op">(</span><span class="py-param">target</span><span class="py-op">,</span> <span class="py-param">timeout</span><span class="py-op">=</span><span id="link-6" class="py-name"><a title="pytimeout.TIMEOUT" class="py-name" href="#" onclick="doclink('link-6', 'TIMEOUT', 'Variable pytimeout.TIMEOUT=pytimeout-module.html#TIMEOUT'); return false;">TIMEOUT</a></span></span><span class="py-op">,</span> <span class="py-param">retry</span><span class="py-op">=</span><span id="link-7" class="py-name"><a title="pytimeout.RETRY" class="py-name" href="#" onclick="doclink('link-7', 'RETRY', 'Variable pytimeout.RETRY=pytimeout-module.html#RETRY'); return false;">RETRY</a></span></span><span class="py-op">,</span> </span>
+<span class="py-lineno"> 45</span>  <span class="py-line">        <span class="py-param">preserveChildren</span><span class="py-op">=</span><span class="py-name">False</span><span class="py-op">,</span> <span class="py-param">verbose</span><span class="py-op">=</span><span class="py-name">False</span><span class="py-op">)</span><span class="py-op">:</span> </span>
+</div><div id="run-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="run-expanded"><span class="py-lineno"> 46</span>  <span class="py-line">    <span class="py-docstring">"""Run a process but kill it after timeout</span> </span>
+<span class="py-lineno"> 47</span>  <span class="py-line"><span class="py-docstring">    @param target: the command to launch (str)</span> </span>
+<span class="py-lineno"> 48</span>  <span class="py-line"><span class="py-docstring">    @param timeout: timeout in seconds before start killing process (int)</span> </span>
+<span class="py-lineno"> 49</span>  <span class="py-line"><span class="py-docstring">    @param retry: Number of time we will try to kill the process with SIGTERM and SIGKILL (int)</span> </span>
+<span class="py-lineno"> 50</span>  <span class="py-line"><span class="py-docstring">    @param preserveChildren: Do we need to also kill process children ? Default is True (bool)</span> </span>
+<span class="py-lineno"> 51</span>  <span class="py-line"><span class="py-docstring">    @param verbose: Print what happened on standard output (bool)</span> </span>
+<span class="py-lineno"> 52</span>  <span class="py-line"><span class="py-docstring">    @return: True if everything is ok. None or False else.</span> </span>
+<span class="py-lineno"> 53</span>  <span class="py-line"><span class="py-docstring">    """</span> </span>
+<span class="py-lineno"> 54</span>  <span class="py-line">     </span>
+<span class="py-lineno"> 55</span>  <span class="py-line">    <span class="py-comment"># Some sanity checks</span> </span>
+<span class="py-lineno"> 56</span>  <span class="py-line"><span class="py-comment"></span>    <span class="py-keyword">if</span> <span class="py-name">timeout</span><span class="py-op">&lt;</span><span class="py-number">0</span> <span class="py-keyword">or</span> <span class="py-name">retry</span><span class="py-op">&lt;</span><span class="py-number">1</span><span class="py-op">:</span> </span>
+<span class="py-lineno"> 57</span>  <span class="py-line">        <span class="py-keyword">print</span> <span class="py-string">"Timeout must be a positive integer and number of retry must be greater or equal than 1"</span> </span>
+<span class="py-lineno"> 58</span>  <span class="py-line">        <span class="py-keyword">return</span> </span>
+<span class="py-lineno"> 59</span>  <span class="py-line">    <span class="py-keyword">if</span> <span class="py-name">verbose</span><span class="py-op">:</span> </span>
+<span class="py-lineno"> 60</span>  <span class="py-line">        <span class="py-keyword">print</span> <span class="py-string">"running %s"</span> <span class="py-op">%</span> <span class="py-name">target</span> </span>
+<span class="py-lineno"> 61</span>  <span class="py-line"> </span>
+<span class="py-lineno"> 62</span>  <span class="py-line">    <span class="py-name">process</span><span class="py-op">=</span><span class="py-name">Popen</span><span class="py-op">(</span><span class="py-name">target</span><span class="py-op">,</span> <span class="py-name">shell</span><span class="py-op">=</span><span class="py-name">True</span><span class="py-op">)</span> </span>
+<span class="py-lineno"> 63</span>  <span class="py-line">    <span class="py-name">sleep</span><span class="py-op">(</span><span class="py-name">timeout</span><span class="py-op">)</span> </span>
+<span class="py-lineno"> 64</span>  <span class="py-line">    <span class="py-keyword">if</span> <span class="py-name">process</span><span class="py-op">.</span><span class="py-name">pid</span> <span class="py-keyword">is</span> <span class="py-name">None</span><span class="py-op">:</span> </span>
+<span class="py-lineno"> 65</span>  <span class="py-line">        <span class="py-keyword">if</span> <span class="py-name">verbose</span><span class="py-op">:</span> </span>
+<span class="py-lineno"> 66</span>  <span class="py-line">            <span class="py-keyword">print</span> <span class="py-string">"process correctly finished"</span> </span>
+<span class="py-lineno"> 67</span>  <span class="py-line">    <span class="py-keyword">else</span><span class="py-op">:</span> </span>
+<span class="py-lineno"> 68</span>  <span class="py-line">        <span class="py-keyword">if</span> <span class="py-name">preserveChildren</span><span class="py-op">:</span> </span>
+<span class="py-lineno"> 69</span>  <span class="py-line">            <span class="py-name">pids</span><span class="py-op">=</span><span class="py-op">[</span><span class="py-op">]</span> </span>
+<span class="py-lineno"> 70</span>  <span class="py-line">        <span class="py-keyword">else</span><span class="py-op">:</span> </span>
+<span class="py-lineno"> 71</span>  <span class="py-line">            <span class="py-name">pids</span><span class="py-op">=</span><span id="link-8" class="py-name"><a title="pytimeout.getChildrenPid" class="py-name" href="#" onclick="doclink('link-8', 'getChildrenPid', 'Function pytimeout.getChildrenPid()=pytimeout-module.html#getChildrenPid'); return false;">getChildrenPid</a></span></span><span class="py-op">(</span><span class="py-name">process</span><span class="py-op">.</span><span class="py-name">pid</span><span class="py-op">,</span> <span class="py-name">verbose</span><span class="py-op">)</span> </span>
+<span class="py-lineno"> 72</span>  <span class="py-line">        <span class="py-name">pids</span><span class="py-op">.</span><span class="py-name">append</span><span class="py-op">(</span><span class="py-name">process</span><span class="py-op">.</span><span class="py-name">pid</span><span class="py-op">)</span> </span>
+<span class="py-lineno"> 73</span>  <span class="py-line">        <span class="py-keyword">for</span> <span class="py-name">i</span> <span class="py-keyword">in</span> <span class="py-name">xrange</span><span class="py-op">(</span><span class="py-name">retry</span><span class="py-op">)</span><span class="py-op">:</span> </span>
+<span class="py-lineno"> 74</span>  <span class="py-line">            <span class="py-keyword">for</span> <span class="py-name">signal</span> <span class="py-keyword">in</span> <span class="py-op">(</span><span class="py-number">15</span><span class="py-op">,</span> <span class="py-number">9</span><span class="py-op">)</span><span class="py-op">:</span> <span class="py-comment"># SIGTERM then SIGKILL</span> </span>
+<span class="py-lineno"> 75</span>  <span class="py-line">                <span class="py-keyword">for</span> <span class="py-name">pid</span> <span class="py-keyword">in</span> <span class="py-name">pids</span><span class="py-op">:</span> </span>
+<span class="py-lineno"> 76</span>  <span class="py-line">                    <span class="py-keyword">if</span> <span class="py-name">verbose</span><span class="py-op">:</span> </span>
+<span class="py-lineno"> 77</span>  <span class="py-line">                        <span class="py-keyword">print</span> <span class="py-string">"kill %s with signal %s"</span> <span class="py-op">%</span> <span class="py-op">(</span><span class="py-name">pid</span><span class="py-op">,</span> <span class="py-name">signal</span><span class="py-op">)</span> </span>
+<span class="py-lineno"> 78</span>  <span class="py-line">                    <span class="py-keyword">try</span><span class="py-op">:</span> </span>
+<span class="py-lineno"> 79</span>  <span class="py-line">                        <span class="py-name">os</span><span class="py-op">.</span><span class="py-name">kill</span><span class="py-op">(</span><span class="py-name">pid</span><span class="py-op">,</span> <span class="py-name">signal</span><span class="py-op">)</span> </span>
+<span class="py-lineno"> 80</span>  <span class="py-line">                    <span class="py-keyword">except</span> <span class="py-name">OSError</span><span class="py-op">,</span> <span class="py-name">e</span><span class="py-op">:</span> </span>
+<span class="py-lineno"> 81</span>  <span class="py-line">                        <span class="py-keyword">if</span> <span class="py-name">e</span><span class="py-op">.</span><span class="py-name">errno</span><span class="py-op">==</span><span class="py-number">1</span><span class="py-op">:</span> </span>
+<span class="py-lineno"> 82</span>  <span class="py-line">                            <span class="py-keyword">print</span> <span class="py-string">"Not authorized to kill %s"</span> <span class="py-op">%</span> <span class="py-name">pid</span> </span>
+<span class="py-lineno"> 83</span>  <span class="py-line">                        <span class="py-keyword">elif</span> <span class="py-name">e</span><span class="py-op">.</span><span class="py-name">errno</span><span class="py-op">==</span><span class="py-number">3</span><span class="py-op">:</span> </span>
+<span class="py-lineno"> 84</span>  <span class="py-line">                            <span class="py-comment"># No such process - already dead</span> </span>
+<span class="py-lineno"> 85</span>  <span class="py-line"><span class="py-comment"></span>                            <span class="py-keyword">pass</span> </span>
+<span class="py-lineno"> 86</span>  <span class="py-line">                        <span class="py-keyword">else</span><span class="py-op">:</span> </span>
+<span class="py-lineno"> 87</span>  <span class="py-line">                            <span class="py-keyword">print</span> <span class="py-string">"Error while killing %s:\n%s"</span> <span class="py-op">%</span> <span class="py-op">(</span><span class="py-name">pid</span><span class="py-op">,</span> <span class="py-name">e</span><span class="py-op">)</span> </span>
+<span class="py-lineno"> 88</span>  <span class="py-line">                <span class="py-name">sleep</span><span class="py-op">(</span><span class="py-name">i</span><span class="py-op">)</span> </span>
+<span class="py-lineno"> 89</span>  <span class="py-line">    <span class="py-keyword">return</span> <span class="py-name">True</span> </span>
+</div><span class="py-lineno"> 90</span>  <span class="py-line"> </span>
+<a name="getChildrenPid"></a><div id="getChildrenPid-def"><span class="py-lineno"> 91</span> <a class="py-toggle" href="#" id="getChildrenPid-toggle" onclick="toggle('getChildrenPid'); return false;">-</a><span class="py-line"><span class="py-keyword">def</span> <a class="py-def-name" href="pytimeout-module.html#getChildrenPid">getChildrenPid</a><span class="py-op">(</span><span class="py-param">fatherPid</span><span class="py-op">,</span> <span class="py-param">verbose</span><span class="py-op">=</span><span class="py-name">False</span><span class="py-op">)</span><span class="py-op">:</span> </span>
+</div><div id="getChildrenPid-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="getChildrenPid-expanded"><span class="py-lineno"> 92</span>  <span class="py-line">    <span class="py-docstring">"""Return a list of a process children PID</span> </span>
+<span class="py-lineno"> 93</span>  <span class="py-line"><span class="py-docstring">    @param pid: father pid</span> </span>
+<span class="py-lineno"> 94</span>  <span class="py-line"><span class="py-docstring">    @return: list of children pid (list of int)"""</span> </span>
+<span class="py-lineno"> 95</span>  <span class="py-line"> </span>
+<span class="py-lineno"> 96</span>  <span class="py-line">    <span class="py-comment"># Get all PID</span> </span>
+<span class="py-lineno"> 97</span>  <span class="py-line"><span class="py-comment"></span>    <span class="py-keyword">try</span><span class="py-op">:</span> </span>
+<span class="py-lineno"> 98</span>  <span class="py-line">        <span class="py-name">pids</span><span class="py-op">=</span><span class="py-op">[</span><span class="py-name">int</span><span class="py-op">(</span><span class="py-name">pid</span><span class="py-op">)</span> <span class="py-keyword">for</span> <span class="py-name">pid</span> <span class="py-keyword">in</span> <span class="py-name">os</span><span class="py-op">.</span><span class="py-name">listdir</span><span class="py-op">(</span><span class="py-string">"/proc"</span><span class="py-op">)</span> <span class="py-keyword">if</span> <span class="py-name">pid</span><span class="py-op">.</span><span class="py-name">isdigit</span><span class="py-op">(</span><span class="py-op">)</span><span class="py-op">]</span> </span>
+<span class="py-lineno"> 99</span>  <span class="py-line">    <span class="py-keyword">except</span> <span class="py-name">OSError</span><span class="py-op">:</span> </span>
+<span class="py-lineno">100</span>  <span class="py-line">        <span class="py-keyword">print</span> <span class="py-string">"Warning, /proc does not exist or is not readable. Cannot find child process"</span> </span>
+<span class="py-lineno">101</span>  <span class="py-line">        <span class="py-keyword">return</span> <span class="py-op">[</span><span class="py-op">]</span> </span>
+<span class="py-lineno">102</span>  <span class="py-line">     </span>
+<span class="py-lineno">103</span>  <span class="py-line">    <span class="py-comment">#Build father tree</span> </span>
+<span class="py-lineno">104</span>  <span class="py-line"><span class="py-comment"></span>    <span class="py-name">father</span><span class="py-op">=</span><span class="py-op">{</span><span class="py-op">}</span> </span>
+<span class="py-lineno">105</span>  <span class="py-line">    <span class="py-keyword">for</span> <span class="py-name">pid</span> <span class="py-keyword">in</span> <span class="py-name">pids</span><span class="py-op">:</span> </span>
+<span class="py-lineno">106</span>  <span class="py-line">        <span class="py-keyword">try</span><span class="py-op">:</span> </span>
+<span class="py-lineno">107</span>  <span class="py-line">            <span class="py-keyword">for</span> <span class="py-name">line</span> <span class="py-keyword">in</span> <span class="py-name">file</span><span class="py-op">(</span><span class="py-name">os</span><span class="py-op">.</span><span class="py-name">path</span><span class="py-op">.</span><span class="py-name">join</span><span class="py-op">(</span><span class="py-string">"/proc"</span><span class="py-op">,</span> <span class="py-name">str</span><span class="py-op">(</span><span class="py-name">pid</span><span class="py-op">)</span><span class="py-op">,</span> <span class="py-string">"status"</span><span class="py-op">)</span><span class="py-op">)</span><span class="py-op">:</span> </span>
+<span class="py-lineno">108</span>  <span class="py-line">                <span class="py-keyword">if</span> <span class="py-name">line</span><span class="py-op">.</span><span class="py-name">startswith</span><span class="py-op">(</span><span class="py-string">"PPid"</span><span class="py-op">)</span><span class="py-op">:</span> </span>
+<span class="py-lineno">109</span>  <span class="py-line">                    <span class="py-name">father</span><span class="py-op">[</span><span class="py-name">pid</span><span class="py-op">]</span><span class="py-op">=</span><span class="py-name">int</span><span class="py-op">(</span><span class="py-name">line</span><span class="py-op">.</span><span class="py-name">split</span><span class="py-op">(</span><span class="py-string">":"</span><span class="py-op">)</span><span class="py-op">[</span><span class="py-number">1</span><span class="py-op">]</span><span class="py-op">)</span> </span>
+<span class="py-lineno">110</span>  <span class="py-line">        <span class="py-keyword">except</span><span class="py-op">:</span> </span>
+<span class="py-lineno">111</span>  <span class="py-line">            <span class="py-comment"># Process disapear since /proc listing above</span> </span>
+<span class="py-lineno">112</span>  <span class="py-line"><span class="py-comment"></span>            <span class="py-comment"># Forget it silently</span> </span>
+<span class="py-lineno">113</span>  <span class="py-line"><span class="py-comment"></span>            <span class="py-keyword">pass</span> </span>
+<span class="py-lineno">114</span>  <span class="py-line">     </span>
+<span class="py-lineno">115</span>  <span class="py-line">    <span class="py-comment"># Look for children</span> </span>
+<span class="py-lineno">116</span>  <span class="py-line"><span class="py-comment"></span>    <span class="py-name">fatherNotFoundError</span><span class="py-op">=</span><span class="py-string">"""Warning: I don't know who is %s's father.</span> </span>
+<span class="py-lineno">117</span>  <span class="py-line"><span class="py-string">This can happened if we do not have enough right to read /proc/&lt;pids&gt;</span> </span>
+<span class="py-lineno">118</span>  <span class="py-line"><span class="py-string">or if this process disapear in the interval.\n"""</span> </span>
+<span class="py-lineno">119</span>  <span class="py-line">     </span>
+<span class="py-lineno">120</span>  <span class="py-line">    <span class="py-name">children</span><span class="py-op">=</span><span class="py-op">[</span><span class="py-op">]</span>    </span>
+<span class="py-lineno">121</span>  <span class="py-line">    <span class="py-keyword">for</span> <span class="py-name">pid</span> <span class="py-keyword">in</span> <span class="py-name">pids</span><span class="py-op">:</span> </span>
+<span class="py-lineno">122</span>  <span class="py-line">        <span class="py-keyword">if</span> <span class="py-keyword">not</span> <span class="py-name">father</span><span class="py-op">.</span><span class="py-name">has_key</span><span class="py-op">(</span><span class="py-name">pid</span><span class="py-op">)</span><span class="py-op">:</span> </span>
+<span class="py-lineno">123</span>  <span class="py-line">            <span class="py-keyword">if</span> <span class="py-name">verbose</span><span class="py-op">:</span> </span>
+<span class="py-lineno">124</span>  <span class="py-line">                <span class="py-keyword">print</span> <span class="py-name">fatherNotFoundError</span> <span class="py-op">%</span> <span class="py-name">pid</span>  </span>
+<span class="py-lineno">125</span>  <span class="py-line">            <span class="py-keyword">continue</span> </span>
+<span class="py-lineno">126</span>  <span class="py-line">        <span class="py-name">childPid</span><span class="py-op">=</span><span class="py-name">pid</span> </span>
+<span class="py-lineno">127</span>  <span class="py-line">        <span class="py-keyword">while</span> <span class="py-name">pid</span><span class="py-op">!=</span><span id="link-9" class="py-name"><a title="pytimeout.INIT_PID" class="py-name" href="#" onclick="doclink('link-9', 'INIT_PID', 'Variable pytimeout.INIT_PID=pytimeout-module.html#INIT_PID'); return false;">INIT_PID</a></span></span><span class="py-op">:</span> </span>
+<span class="py-lineno">128</span>  <span class="py-line">            <span class="py-keyword">if</span> <span class="py-name">father</span><span class="py-op">[</span><span class="py-name">pid</span><span class="py-op">]</span><span class="py-op">==</span><span class="py-name">fatherPid</span><span class="py-op">:</span> </span>
+<span class="py-lineno">129</span>  <span class="py-line">                <span class="py-name">children</span><span class="py-op">.</span><span class="py-name">append</span><span class="py-op">(</span><span class="py-name">childPid</span><span class="py-op">)</span> </span>
+<span class="py-lineno">130</span>  <span class="py-line">                <span class="py-keyword">break</span> </span>
+<span class="py-lineno">131</span>  <span class="py-line">            <span class="py-keyword">if</span> <span class="py-name">father</span><span class="py-op">.</span><span class="py-name">has_key</span><span class="py-op">(</span><span class="py-name">pid</span><span class="py-op">)</span><span class="py-op">:</span> </span>
+<span class="py-lineno">132</span>  <span class="py-line">                <span class="py-name">pid</span><span class="py-op">=</span><span class="py-name">father</span><span class="py-op">[</span><span class="py-name">pid</span><span class="py-op">]</span> </span>
+<span class="py-lineno">133</span>  <span class="py-line">            <span class="py-keyword">else</span><span class="py-op">:</span> </span>
+<span class="py-lineno">134</span>  <span class="py-line">                <span class="py-keyword">if</span> <span class="py-name">verbose</span><span class="py-op">:</span> </span>
+<span class="py-lineno">135</span>  <span class="py-line">                    <span class="py-keyword">print</span> <span class="py-name">fatherNotFoundError</span> <span class="py-op">%</span> <span class="py-name">pid</span> </span>
+<span class="py-lineno">136</span>  <span class="py-line">                <span class="py-keyword">break</span> </span>
+<span class="py-lineno">137</span>  <span class="py-line">    <span class="py-keyword">return</span> <span class="py-name">children</span> </span>
+</div><span class="py-lineno">138</span>  <span class="py-line">         </span>
+<a name="parseOptions"></a><div id="parseOptions-def"><span class="py-lineno">139</span> <a class="py-toggle" href="#" id="parseOptions-toggle" onclick="toggle('parseOptions'); return false;">-</a><span class="py-line"><span class="py-keyword">def</span> <a class="py-def-name" href="pytimeout-module.html#parseOptions">parseOptions</a><span class="py-op">(</span><span class="py-op">)</span><span class="py-op">:</span> </span>
+</div><div id="parseOptions-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="parseOptions-expanded"><span class="py-lineno">140</span>  <span class="py-line">    <span class="py-docstring">"""Parses command argument using optparse python module</span> </span>
+<span class="py-lineno">141</span>  <span class="py-line"><span class="py-docstring">    @return: (options, argv) tuple"""</span> </span>
+<span class="py-lineno">142</span>  <span class="py-line">     </span>
+<span class="py-lineno">143</span>  <span class="py-line">    <span class="py-name">usage</span><span class="py-op">=</span><span class="py-string">"usage: %prog [options] &lt;program to launch&gt;"</span> </span>
+<span class="py-lineno">144</span>  <span class="py-line">    <span class="py-name">version</span><span class="py-op">=</span><span class="py-string">"%%prog %s"</span> <span class="py-op">%</span> <span id="link-10" class="py-name"><a title="pytimeout.VERSION" class="py-name" href="#" onclick="doclink('link-10', 'VERSION', 'Variable pytimeout.VERSION=pytimeout-module.html#VERSION'); return false;">VERSION</a></span></span>  </span>
+<span class="py-lineno">145</span>  <span class="py-line">    <span class="py-name">parser</span><span class="py-op">=</span><span class="py-name">OptionParser</span><span class="py-op">(</span><span class="py-name">usage</span><span class="py-op">=</span><span class="py-name">usage</span><span class="py-op">,</span> <span class="py-name">version</span><span class="py-op">=</span><span class="py-name">version</span><span class="py-op">)</span> </span>
+<span class="py-lineno">146</span>  <span class="py-line"> </span>
+<span class="py-lineno">147</span>  <span class="py-line">    <span class="py-comment"># Timeout</span> </span>
+<span class="py-lineno">148</span>  <span class="py-line"><span class="py-comment"></span>    <span class="py-name">parser</span><span class="py-op">.</span><span class="py-name">add_option</span><span class="py-op">(</span><span class="py-string">"-t"</span><span class="py-op">,</span> <span class="py-string">"--timeout"</span><span class="py-op">,</span> <span class="py-name">dest</span><span class="py-op">=</span><span class="py-string">"timeout"</span><span class="py-op">,</span> <span class="py-name">type</span><span class="py-op">=</span><span class="py-string">"int"</span><span class="py-op">,</span> <span class="py-name">default</span><span class="py-op">=</span><span id="link-11" class="py-name"><a title="pytimeout.TIMEOUT" class="py-name" href="#" onclick="doclink('link-11', 'TIMEOUT', 'Variable pytimeout.TIMEOUT=pytimeout-module.html#TIMEOUT'); return false;">TIMEOUT</a></span></span><span class="py-op">,</span> </span>
+<span class="py-lineno">149</span>  <span class="py-line">              <span class="py-name">help</span><span class="py-op">=</span><span class="py-string">"Timeout in seconds. Default is 10"</span><span class="py-op">)</span> </span>
+<span class="py-lineno">150</span>  <span class="py-line"> </span>
+<span class="py-lineno">151</span>  <span class="py-line">    <span class="py-comment"># Retries</span> </span>
+<span class="py-lineno">152</span>  <span class="py-line"><span class="py-comment"></span>    <span class="py-name">parser</span><span class="py-op">.</span><span class="py-name">add_option</span><span class="py-op">(</span><span class="py-string">"-r"</span><span class="py-op">,</span> <span class="py-string">"--retry"</span><span class="py-op">,</span> <span class="py-name">dest</span><span class="py-op">=</span><span class="py-string">"retry"</span><span class="py-op">,</span> <span class="py-name">type</span><span class="py-op">=</span><span class="py-string">"int"</span><span class="py-op">,</span> <span class="py-name">default</span><span class="py-op">=</span><span id="link-12" class="py-name"><a title="pytimeout.RETRY" class="py-name" href="#" onclick="doclink('link-12', 'RETRY', 'Variable pytimeout.RETRY=pytimeout-module.html#RETRY'); return false;">RETRY</a></span></span><span class="py-op">,</span> </span>
+<span class="py-lineno">153</span>  <span class="py-line">              <span class="py-name">help</span><span class="py-op">=</span><span class="py-string">"Number of kill retries. Default is 2"</span><span class="py-op">)</span> </span>
+<span class="py-lineno">154</span>  <span class="py-line"> </span>
+<span class="py-lineno">155</span>  <span class="py-line">    <span class="py-comment"># Preserve children</span> </span>
+<span class="py-lineno">156</span>  <span class="py-line"><span class="py-comment"></span>    <span class="py-name">parser</span><span class="py-op">.</span><span class="py-name">add_option</span><span class="py-op">(</span><span class="py-string">"-p"</span><span class="py-op">,</span> <span class="py-string">"--preserve-children"</span><span class="py-op">,</span> <span class="py-name">dest</span><span class="py-op">=</span><span class="py-string">"preserveChildren"</span><span class="py-op">,</span> <span class="py-name">action</span><span class="py-op">=</span><span class="py-string">"store_true"</span><span class="py-op">,</span> </span>
+<span class="py-lineno">157</span>  <span class="py-line">              <span class="py-name">help</span><span class="py-op">=</span><span class="py-string">"Do not kill process children"</span><span class="py-op">)</span> </span>
+<span class="py-lineno">158</span>  <span class="py-line"> </span>
+<span class="py-lineno">159</span>  <span class="py-line">    <span class="py-comment"># Verbose</span> </span>
+<span class="py-lineno">160</span>  <span class="py-line"><span class="py-comment"></span>    <span class="py-name">parser</span><span class="py-op">.</span><span class="py-name">add_option</span><span class="py-op">(</span><span class="py-string">"-v"</span><span class="py-op">,</span> <span class="py-string">"--verbose"</span><span class="py-op">,</span> <span class="py-name">dest</span><span class="py-op">=</span><span class="py-string">"verbose"</span><span class="py-op">,</span> <span class="py-name">action</span><span class="py-op">=</span><span class="py-string">"store_true"</span><span class="py-op">,</span> </span>
+<span class="py-lineno">161</span>  <span class="py-line">              <span class="py-name">help</span><span class="py-op">=</span><span class="py-string">"Tell what happened on standard output"</span><span class="py-op">)</span> </span>
+<span class="py-lineno">162</span>  <span class="py-line"> </span>
+<span class="py-lineno">163</span>  <span class="py-line">    <span class="py-keyword">return</span> <span class="py-name">parser</span><span class="py-op">.</span><span class="py-name">parse_args</span><span class="py-op">(</span><span class="py-op">)</span> </span>
+</div><span class="py-lineno">164</span>  <span class="py-line"> </span>
+<span class="py-lineno">165</span>  <span class="py-line"><span class="py-comment"># Main</span> </span>
+<span class="py-lineno">166</span>  <span class="py-line"><span class="py-comment"></span><span class="py-keyword">if</span> <span class="py-name">__name__</span> <span class="py-op">==</span> <span class="py-string">"__main__"</span><span class="py-op">:</span> </span>
+<span class="py-lineno">167</span>  <span class="py-line">    <span id="link-13" class="py-name"><a title="pytimeout.main" class="py-name" href="#" onclick="doclink('link-13', 'main', 'Function pytimeout.main()=pytimeout-module.html#main'); return false;">main</a></span></span><span class="py-op">(</span><span class="py-op">)</span> </span>
+<span class="py-lineno">168</span>  <span class="py-line"> </span><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th bgcolor="#70b0f0" class="navbar-select"
+          >&nbsp;&nbsp;&nbsp;Home&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >pytimeout</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">Generated by Epydoc
+        3.0alpha3 on Wed Jul 11 08:57:43 2007</td>
+    <td align="right" class="footer">
+      <a href="http://epydoc.sourceforge.net">http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie()
+  // -->
+</script>
+  
+</body>
+</html>
