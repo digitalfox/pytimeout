@@ -13,7 +13,7 @@ to allow process launching with a define time to live before being killed.
 import sys
 import os
 from subprocess import Popen
-from time import sleep
+from time import sleep, time
 from optparse import OptionParser
 
 # Some constant for default values
@@ -60,8 +60,21 @@ def run(target, timeout=TIMEOUT, retry=RETRY,
         print "running %s" % target
 
     process=Popen(target, shell=True)
-    sleep(timeout)
-    if process.pid is None:
+    endTime=time()+timeout
+    while True:
+        # Timeout
+        if time()>endTime:
+            if verbose:
+                print "Process timeout"
+            break
+        # Process finish
+        if process.poll() is not None:
+            if verbose:
+                print "Process finish before timeout"
+            break
+        # Wait a little before looping
+        sleep(0.05)
+    if process.poll() is not None:
         if verbose:
             print "process correctly finished"
     else:
